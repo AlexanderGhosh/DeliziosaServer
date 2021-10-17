@@ -34,7 +34,7 @@ const smtpTransport = nodemailer.createTransport({
 });
 let mailOptions = {
   from: "ghoshalexander@gmail.com",
-  to: "ghoshalexander@gmail.com",
+  to: "ptghosh@aol.com, agwdw@outlook.com",
   subject: "Node.js Email with Secure OAuth",
   generateTextFromHTML: true,
   html: "<b>test 2</b>"
@@ -69,7 +69,7 @@ async function sendEmail(req, res){
     text: "Soy boy", // plain text body
     html: `<b>${JSON.stringify(req.body)}</b>`, // html body
   });*/
-  mailOptions.html = `<b>test${counter++}</b>`
+  mailOptions.html = `<b>TEXT not email alex when you get this email please</b>`
   smtpTransport.sendMail(mailOptions, (error, response) => {
     error ? console.log(error) : console.log(response);
     smtpTransport.close();
