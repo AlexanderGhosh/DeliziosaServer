@@ -1,8 +1,8 @@
 require('dotenv').config();
-const https = require('https');
+//const https = require('https');
 const express = require('express')
 const app = express();
-const port = 3000;
+const port = process.env.PORT;
 
 app.get('/', (req, res) => {
   res.send(process.env.TEXT_EG);
