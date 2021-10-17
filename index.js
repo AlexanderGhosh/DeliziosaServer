@@ -1,8 +1,48 @@
 require('dotenv').config();
 const nodemailer = require('nodemailer');
+const { google } = require('googleapis');
+const OAuth2 = google.auth.OAuth2;
 const express = require('express')
 const app = express();
 const port = process.env.PORT;
+
+
+const oauth2Client = new OAuth2(
+  '357736659089-cf9n4i06f0lc2v9aghi9v2s8655mvi1s.apps.googleusercontent.com',
+  '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',
+  'https://developers.google.com/oauthplayground'
+);
+
+oauth2Client.setCredentials({
+  refresh_token: '1//04SR9Shq1NzgzCgYIARAAGAQSNwF-L9IrNVBFjPS7Djw9aLBbO77zyGDaemjmuk7t1kjtOlF0OT4JHOLURB4p4A9Ne3hPzwgHCks'
+});
+const accessToken = oauth2Client.getAccessToken()
+
+const smtpTransport = nodemailer.createTransport({
+  service: "gmail",
+  auth: {
+    type: "OAuth2",
+    user: "ghoshalexander@gmail.com",
+    clientId: "357736659089-cf9n4i06f0lc2v9aghi9v2s8655mvi1s.apps.googleusercontent.com",
+    clientSecret: "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",
+    refreshToken: "1//04SR9Shq1NzgzCgYIARAAGAQSNwF-L9IrNVBFjPS7Djw9aLBbO77zyGDaemjmuk7t1kjtOlF0OT4JHOLURB4p4A9Ne3hPzwgHCks",
+    accessToken: accessToken
+  },
+  tls: {
+    rejectUnauthorized: false
+  }
+});
+const mailOptions = {
+  from: "ghoshalexander@gmail.com",
+  to: "ghoshalexander@gmail.com",
+  subject: "Node.js Email with Secure OAuth",
+  generateTextFromHTML: true,
+  html: "<b>test 2</b>"
+};
+smtpTransport.sendMail(mailOptions, (error, response) => {
+  error ? console.log(error) : console.log(response);
+  smtpTransport.close();
+});
 
 app.use(express.json());
 
@@ -36,6 +76,6 @@ app.get('/', (req, res) => {
 });
 
 app.post('/email', sendEmail);
-app.listen(port, () => {
+/*app.listen(port, () => {
   console.log(`Example app listening at http://localhost:${port}`)
-});
+});*/
