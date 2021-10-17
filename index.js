@@ -32,22 +32,23 @@ const smtpTransport = nodemailer.createTransport({
     rejectUnauthorized: false
   }
 });
-const mailOptions = {
+let mailOptions = {
   from: "ghoshalexander@gmail.com",
   to: "ghoshalexander@gmail.com",
   subject: "Node.js Email with Secure OAuth",
   generateTextFromHTML: true,
   html: "<b>test 2</b>"
 };
-smtpTransport.sendMail(mailOptions, (error, response) => {
+let counter = 3;
+/*smtpTransport.sendMail(mailOptions, (error, response) => {
   error ? console.log(error) : console.log(response);
   smtpTransport.close();
-});
+});*/
 
 app.use(express.json());
 
 async function sendEmail(req, res){
-  let testAccount = await nodemailer.createTestAccount();
+  /*let testAccount = await nodemailer.createTestAccount();
 
   // create reusable transporter object using the default SMTP transport
   let transporter = nodemailer.createTransport({
@@ -67,6 +68,11 @@ async function sendEmail(req, res){
     subject: "killer dog", // Subject line
     text: "Soy boy", // plain text body
     html: `<b>${JSON.stringify(req.body)}</b>`, // html body
+  });*/
+  mailOptions.html = `<b>test${counter++}</b>`
+  smtpTransport.sendMail(mailOptions, (error, response) => {
+    error ? console.log(error) : console.log(response);
+    smtpTransport.close();
   });
   res.status(201).send('sent');
 };
@@ -76,6 +82,6 @@ app.get('/', (req, res) => {
 });
 
 app.post('/email', sendEmail);
-/*app.listen(port, () => {
+app.listen(port, () => {
   console.log(`Example app listening at http://localhost:${port}`)
-});*/
+});
