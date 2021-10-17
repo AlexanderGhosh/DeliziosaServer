@@ -15,8 +15,8 @@ async function sendEmail(req, res){
     port: 465,
     secure: true, // true for 465, false for other ports
     auth: {
-     user: process.env.EMAIL_USERNAME, // generated ethereal user
-     pass: process.env.EMAIL_PASSWORD, // generated ethereal password
+     user: process.env.EMAIL_USERNAME,
+     pass: process.env.EMAIL_PASSWORD
     },
   });
 
@@ -24,11 +24,11 @@ async function sendEmail(req, res){
   let info = await transporter.sendMail({
     from: '<ghoshalexander@gmail.com>', // sender address
     to: "ghoshalexander@gmail.com", // list of receivers
-    subject: "sheesh", // Subject line
+    subject: "killer dog", // Subject line
     text: "Soy boy", // plain text body
     html: `<b>${JSON.stringify(req.body)}</b>`, // html body
   });
-  res.send('sent');
+  res.status(201).send('sent');
 };
 
 app.get('/', (req, res) => {
