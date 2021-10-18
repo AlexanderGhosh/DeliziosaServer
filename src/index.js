@@ -14,6 +14,7 @@ app.get('/', (req, res) => {
 
 app.post('/email', (req, res) => {
   const data = req.body;
+  console.log(data);
   const success = email.SendEmail(data.subject, data.body, data.recipient);
   if(success){
     res.status(201).send("Success");
