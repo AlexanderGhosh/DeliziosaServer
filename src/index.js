@@ -14,10 +14,10 @@ app.post('/email', (req, res) => {
   const data = req.body;
   const success = email.SendEmail(data.subject, data.body, data.recipient);
   if(success){
-    res.status(201);
+    res.status(201).send("Success");
   }
   else{
-    res.status(500);
+    res.status(500).send("Error");
   }
 });
 
