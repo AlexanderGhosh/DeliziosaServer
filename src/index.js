@@ -1,10 +1,12 @@
 require('dotenv').config();
-const email = require('./libs/email')
-const express = require('express')
+const email = require('./libs/email');
+const express = require('express');
+const cors = require('cors');
 const app = express();
 const port = process.env.PORT;
 
 app.use(express.json());
+app.use(cors());
 
 app.get('/', (req, res) => {
   res.send(process.env.TEXT_EG);
