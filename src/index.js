@@ -12,16 +12,19 @@ app.get('/', (req, res) => {
   res.send(process.env.TEXT_EG);
 });
 
-app.post('/email', (req, res) => {
+app.post('/email', async (req, res) => {
   const data = req.body;
   console.log(data);
-  const success = email.SendEmail(data.subject, data.body, data.recipient);
-  if(success){
-    res.status(201).send("Success");
-  }
-  else{
-    res.status(500).send("Error");
-  }
+  let success = email.SendEmail(data.subject, data.body, data.recipient, (e, response) => {
+    if(e){
+      console.log('error');
+      res.status(500).send("Error");
+    }
+    else{
+      console.log('succ');
+      res.status(201).send("Success");
+    }
+  });
 });
 
 app.listen(port, () => {

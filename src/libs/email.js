@@ -30,7 +30,7 @@ const smtpTransport = nodemailer.createTransport({
   }
 });
 
-function SendEmail(subject, body, recipient){
+function SendEmail(subject, body, recipient, callBack){
   let mailOptions = {
     from: process.env.EMAIL_USERNAME,
     to: recipient,
@@ -39,10 +39,12 @@ function SendEmail(subject, body, recipient){
     html: `<b>${body}</b>`
   };
   let hasError = false;
+
+
   smtpTransport.sendMail(mailOptions, (error, response) => {
+    callBack(error, response);
     error ? console.log(error) : console.log(response);
     smtpTransport.close();
-    hasError = true;
   });
   return !hasError;
 }
