@@ -12,7 +12,7 @@ app.get('/', (req, res) => {
   res.send(process.env.TEXT_EG);
 });
 
-app.post('/email', async (req, res) => {
+app.post('/email', (req, res) => {
   const data = req.body;
   console.log(data);
   let success = email.SendEmail(data.subject, data.body, data.recipient, (e, response) => {
