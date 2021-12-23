@@ -1,7 +1,7 @@
 require('dotenv').config();
 const nodemailer = require('nodemailer');
 
-/*var smtpTransport = nodemailer.createTransport({
+var smtpTransport = nodemailer.createTransport({
   service: "gmail",
   auth: {
     type: "OAuth2",
@@ -13,15 +13,15 @@ const nodemailer = require('nodemailer');
   tls: {
     rejectUnauthorized: false
   }
-});*/
+});
 
-var smtpTransport = nodemailer.createTransport({
+/*var smtpTransport = nodemailer.createTransport({
   service: "Gmail",
   auth: {
     user: process.env.EMAIL_USERNAME,
     pass: process.env.EMAIL_PASSWORD
   }
-});
+});*/
 
 
 function SendEmail(subject, body, recipient, callBack){
