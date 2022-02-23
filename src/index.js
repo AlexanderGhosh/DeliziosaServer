@@ -13,6 +13,10 @@ app.get('/', (req, res) => {
   res.send("This isnt a real page");
 });
 
+app.post('/wake-up', (req, res) => {
+
+}); 
+
 app.post('/email', (req, res) => {
   const data = req.body;
   console.log(data);
