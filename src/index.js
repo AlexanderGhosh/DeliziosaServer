@@ -14,7 +14,7 @@ app.get('/', (req, res) => {
 });
 
 app.post('/wake-up', (req, res) => {
-
+  res.status(201).send("woken up");
 }); 
 
 app.post('/email', (req, res) => {
