@@ -1,6 +1,7 @@
 require('dotenv').config();
 const email = require('./libs/email');
 const mongo = require('./libs/mongo');
+const time = require('./libs/time');
 const { WorkBook } = require('./libs/excel');
 const express = require('express');
 const cors = require('cors');
@@ -17,12 +18,12 @@ app.get('/', (req, res) => {
 
 app.post('/wake-up', (req, res) => {
   res.status(201).send("woken up");
-}); 
+});
 
 app.post('/email', (req, res) => {
   const data = req.body;
   console.log(data);
-  let success = email.SendEmail(data.subject, data.body, data.recipient, (e, response) => {
+  _ = email.SendEmail(data.subject, data.body, data.recipient, (e, response) => {
     if (e) {
       console.log('error');
       res.status(500).send("Error");
@@ -35,13 +36,61 @@ app.post('/email', (req, res) => {
 });
 
 app.get('/c_c/meat', async (_, res) => {
-  client.collection('Meat');
+  client.activate('ClickAndCollect', 'Meat');
   res.status(201).json(await client.findAll())
 });
 app.get('/c_c/cheese', async (_, res) => {
-  client.collection('Cheese');
+  client.activate('ClickAndCollect', 'Cheese');
   res.status(201).json(await client.findAll())
 });
+
+app.post('/clockin', async (req, res) => {
+  const data = req.body;
+  console.log(data);
+  client.activate('WorkingHours', 'ClockIn');
+  await client.insert({
+    name: data.name,
+    startTime: data.startTime,
+    endTime: '',
+    duration: ''
+  });
+  res.status(201).send('Clocked in');
+});
+
+app.post('/clockout', async (req, res) => {
+  const data = req.body;
+  client.activate('WorkingHours', 'ClockIn');
+
+  await client.findOne({
+    name: data.name,
+    endTime: ''
+  },
+    async function (e, res) {
+      if (res == null) {
+        console.log('returned');
+        return;
+      }
+      const st = res.startTime;
+
+      const duration = time.calcDuration(st, data.endTime);
+      console.log(duration);
+
+      await client.update({
+        name: data.name,
+        endTime: ''
+      },
+        {
+          $set: {
+            name: data.name,
+            startTime: st,
+            endTime: data.endTime,
+            duration: duration
+          }
+        });
+    });
+  res.status(201).send('Updated');
+});
+
 
 app.get('/test', (_, res) => {
   let wb = new WorkBook();
@@ -55,7 +104,7 @@ app.get('/test', (_, res) => {
 
   wb.save('test 1');
 
-  _ = email.SendAttachment([{filename:'test 1.xlsx', path: './test 1.xlsx'}], 'server test excel', 'ghoshalexander@gmail.com', (e, response) => {
+  _ = email.SendAttachment([{ filename: 'test 1.xlsx', path: './test 1.xlsx' }], 'server test excel', 'ghoshalexander@gmail.com', (e, response) => {
     if (e) {
       console.log('error');
       res.status(500).send("Error");

@@ -6,45 +6,43 @@ class MongoConection {
         `mongodb+srv://${process.env.MONGO_USERNAME}:${process.env.MONGO_PASSWORD}@maindata.0hsso.mongodb.net/ClickAndCollect?retryWrites=true&w=majority`, 
         { useNewUrlParser: true, useUnifiedTopology: true });
     this.client.connect();
-    this.databases = {};
-    this.activeDB = '';
-    this.collections = {};
-    this.activeColl = '';
+    this.db = {};
+    this.activeCollection = undefined;
+    }
+
+    activate(db, collection) {
+        this.database(db);
+        this.collection(collection)
     }
 
     database(name) {
-        this.databases[name] = this.client.db(name);
+        this.db = this.client.db(name);
         this.activeDB = name;
     }
 
     collection(name) {
-        this.collections[name] = this.getActiveDB().collection(name);
-        this.activeColl = name;
+        this.activeCollection = this.db.collection(name);
     }
 
     async findAll() {
-        let cursor = this.getActiveCollection().find({});
+        let cursor = this.activeCollection.find({});
         return await cursor.toArray();
     }
     
-    async findOne(query) {
-        return await this.getActiveCollection().findOne(query);
+    async findOne(query, cb) {
+        return await this.activeCollection.findOne(query, {}, cb);
     }
     
     async insert(data) {
-        await this.getActiveCollection().insertOne(data);
+        await this.activeCollection.insertOne(data);
+    }
+
+    async update(query, values, cb) {
+        await this.activeCollection.updateOne(query, values, cb);
     }
 
     close() {
         client.close();
-    }
-
-    getActiveCollection() {
-        return this.collections[this.activeColl];
-    }
-
-    getActiveDB() {
-        return this.databases[this.activeDB];
     }
 }
 
