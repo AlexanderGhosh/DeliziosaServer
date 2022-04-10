@@ -1,49 +1,54 @@
 const { MongoClient } = require('mongodb');
-const cli = require('nodemon/lib/cli');
 
-let client = undefined;
-let database = undefined;
-let collection = undefined;
-
-function Connect() {
-    client = new MongoClient(
+class MongoConection {
+    constructor() {
+    this.client = new MongoClient(
         `mongodb+srv://${process.env.MONGO_USERNAME}:${process.env.MONGO_PASSWORD}@maindata.0hsso.mongodb.net/ClickAndCollect?retryWrites=true&w=majority`, 
         { useNewUrlParser: true, useUnifiedTopology: true });
-    client.connect();
-}
+    this.client.connect();
+    this.databases = {};
+    this.activeDB = '';
+    this.collections = {};
+    this.activeColl = '';
+    }
 
-function OpenDatabase(database_n) {
-    database = client.db(database_n);
-}
+    database(name) {
+        this.databases[name] = this.client.db(name);
+        this.activeDB = name;
+    }
 
-function OpenCollection(collection_n) {
-    collection = database.collection(collection_n);
-}
+    collection(name) {
+        this.collections[name] = this.getActiveDB().collection(name);
+        this.activeColl = name;
+    }
 
-function Close() {
-    client.close();
-}
+    async findAll() {
+        let cursor = this.getActiveCollection().find({});
+        return await cursor.toArray();
+    }
+    
+    async findOne(query) {
+        return await this.getActiveCollection().findOne(query);
+    }
+    
+    async insert(data) {
+        await this.getActiveCollection().insertOne(data);
+    }
 
-async function FindAll() {
-    let cursor = collection.find({});
-    return await cursor.toArray();
-}
+    close() {
+        client.close();
+    }
 
-async function FindOne(query) {
-    return await collection.findOne(query);
-}
+    getActiveCollection() {
+        return this.collections[this.activeColl];
+    }
 
-async function Insert(data) {
-    await collection.insertOne(data);
+    getActiveDB() {
+        return this.databases[this.activeDB];
+    }
 }
 
 module.exports = {
-    Connect,
-    Close,
-    OpenDatabase,
-    OpenCollection,
-    FindAll,
-    FindOne,
-    Insert
+    MongoConection
   };
   

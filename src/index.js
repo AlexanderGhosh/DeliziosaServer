@@ -6,6 +6,7 @@ const express = require('express');
 const cors = require('cors');
 const app = express();
 const port = process.env.PORT;
+let client = new mongo.MongoConection();
 
 app.use(express.json());
 app.use(cors());
@@ -33,16 +34,16 @@ app.post('/email', (req, res) => {
   });
 });
 
-app.get('/c_c/meat', async (req, res) => {
-  mongo.OpenCollection('Meat');
-  res.status(201).json(await mongo.FindAll())
+app.get('/c_c/meat', async (_, res) => {
+  client.collection('Meat');
+  res.status(201).json(await client.findAll())
 });
-app.get('/c_c/cheese', async (req, res) => {
-  mongo.OpenCollection('Cheese');
-  res.status(201).json(await mongo.FindAll())
+app.get('/c_c/cheese', async (_, res) => {
+  client.collection('Cheese');
+  res.status(201).json(await client.findAll())
 });
 
-app.get('/test', (req, res) => {
+app.get('/test', (_, res) => {
   let wb = new WorkBook();
   wb.sheet('main test 1');
   wb.sheet('sheet 2');
@@ -54,7 +55,7 @@ app.get('/test', (req, res) => {
 
   wb.save('test 1');
 
-  let success = email.SendAttachment([{filename:'test 1.xlsx', path: './test 1.xlsx'}], 'server test excel', 'ghoshalexander@gmail.com', (e, response) => {
+  _ = email.SendAttachment([{filename:'test 1.xlsx', path: './test 1.xlsx'}], 'server test excel', 'ghoshalexander@gmail.com', (e, response) => {
     if (e) {
       console.log('error');
       res.status(500).send("Error");
@@ -68,14 +69,13 @@ app.get('/test', (req, res) => {
 });
 
 app.listen(port, () => {
-  mongo.Connect();
-  mongo.OpenDatabase("ClickAndCollect");
+  client.database('ClickAndCollect');
   console.log(`API listening on Port:${port}`);
 });
 
 function exitHandler(options, exitCode) {
-  if (options.cleanup) {
-    mongo.Close();
+  if (options.cleanup && client) {
+    client.close();
   }
 
   if (exitCode) {
