@@ -1,6 +1,7 @@
 require('dotenv').config();
 const email = require('./libs/email');
 const mongo = require('./libs/mongo');
+const { WorkBook } = require('./libs/excel');
 const express = require('express');
 const cors = require('cors');
 const app = express();
@@ -39,6 +40,31 @@ app.get('/c_c/meat', async (req, res) => {
 app.get('/c_c/cheese', async (req, res) => {
   mongo.OpenCollection('Cheese');
   res.status(201).json(await mongo.FindAll())
+});
+
+app.get('/test', (req, res) => {
+  let wb = new WorkBook();
+  wb.sheet('main test 1');
+  wb.sheet('sheet 2');
+  wb.active('main test 1');
+  wb.cell(1, 1).string('hello alex');
+  wb.cell(2, 2).number(1001);
+  wb.active('sheet 2');
+  wb.cell(3, 3).date(new Date());
+
+  wb.save('test 1');
+
+  let success = email.SendAttachment([{filename:'test 1.xlsx', path: './test 1.xlsx'}], 'server test excel', 'ghoshalexander@gmail.com', (e, response) => {
+    if (e) {
+      console.log('error');
+      res.status(500).send("Error");
+    }
+    else {
+      console.log('succ');
+      res.status(201).send("Success");
+    }
+  });
+
 });
 
 app.listen(port, () => {

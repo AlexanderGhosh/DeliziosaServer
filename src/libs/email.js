@@ -23,6 +23,23 @@ var smtpTransport = nodemailer.createTransport({
   }
 });*/
 
+function SendAttachment(attachments, subject, recipient, callBack) {
+  let mailOptions = {
+    from: process.env.EMAIL_USERNAME,
+    to: recipient,
+    subject: subject,
+    attachments: attachments    
+  };
+  let hasError = false;
+
+
+  smtpTransport.sendMail(mailOptions, (error, response) => {
+    callBack(error, response);
+    error ? console.log(error) : console.log(response);
+    smtpTransport.close();
+  });
+  return !hasError;
+}
 
 function SendEmail(subject, body, recipient, callBack){
   let mailOptions = {
@@ -44,5 +61,6 @@ function SendEmail(subject, body, recipient, callBack){
 }
 
 module.exports = {
-  SendEmail
+  SendEmail,
+  SendAttachment
 };
