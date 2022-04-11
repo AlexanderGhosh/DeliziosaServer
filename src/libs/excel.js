@@ -22,6 +22,7 @@ class WorkBook {
     }
     save(name) {
         this.book.write(`${name}.xlsx`)
+        console.log('saving');
     }
 }
 

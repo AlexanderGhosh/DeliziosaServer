@@ -74,6 +74,12 @@ function dateToString(date) {
     return `${day}/${month}/${year}`;
 }
 
+function timeToString(time) {
+    let hours = time.getHours();
+    let mins = time.getMinutes();
+    return `${hours}:${mins}`;
+}
+
 function addDays(date, days){
     const copy = new Date(Number(date))
     copy.setDate(date.getDate() + days)
@@ -94,7 +100,6 @@ function durationOutOfRange(start, end) {
 
     const endDate = ukDateToDate(end);    
     const endingHour = endDate.getHours();
-    console.log(hours);
     return {
         invalid: hours > 11 || endingHour > 1 && endingHour < 7 || hours < 1,
         value: `${hours < 10 ? '0' + hours: hours}:${mins < 10 ? '0' + mins: mins}`
@@ -108,5 +113,6 @@ module.exports = {
     dateToString,
     addDays,
     durationOutOfRange,
-    calcDuration
+    calcDuration,
+    timeToString
 };

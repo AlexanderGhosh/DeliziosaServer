@@ -3,7 +3,6 @@ const email = require('./libs/email');
 const mongo = require('./libs/mongo');
 const time = require('./libs/time');
 const clocking = require('./libs/clocking');
-const { WorkBook } = require('./libs/excel');
 const express = require('express');
 const cors = require('cors');
 const app = express();
@@ -55,15 +54,21 @@ app.post('/clockOut', async (req, res) => {
   const data = req.body;
 
   await clocking.clockOut(data.name, data.endTime, client,
-    async (success) => {
+    async (success, start) => {
       if (success) {
         res.status(201).send('Success');
       }
       else {
-        res.status(400).send('End Time Out of Range');
+        res.status(400).send(`End Time Out of Range,${start}`);
       }
     }
   );
+});
+
+app.post('/addComment', async (req, res) => {
+  const data = req.body;
+  await clocking.addComment(data.name, data.startTime, data.comment, client);
+  res.status(201).send('Success');
 });
 
 app.get('/getNames', async (_, res) => {
@@ -88,8 +93,9 @@ app.post('/renameName', async (req, res) => {
   res.status(201).send('Renamed');
 });
 
-app.get('/clockedIn', async (req, res) => {
+app.post('/clockedIn', async (req, res) => {
   const data = req.body;
+  console.log(data);
   await clocking.hasClockedIn(data.name, data.today, client,
     async (succes) => {
       if (succes) {
@@ -99,32 +105,6 @@ app.get('/clockedIn', async (req, res) => {
         res.status(404).send(false);
       }
     });
-});
-
-
-app.get('/test', (_, res) => {
-  let wb = new WorkBook();
-  wb.sheet('main test 1');
-  wb.sheet('sheet 2');
-  wb.active('main test 1');
-  wb.cell(1, 1).string('hello alex');
-  wb.cell(2, 2).number(1001);
-  wb.active('sheet 2');
-  wb.cell(3, 3).date(new Date());
-
-  wb.save('test 1');
-
-  _ = email.SendAttachment([{ filename: 'test 1.xlsx', path: './test 1.xlsx' }], 'server test excel', 'ghoshalexander@gmail.com', (e, response) => {
-    if (e) {
-      console.log('error');
-      res.status(500).send("Error");
-    }
-    else {
-      console.log('succ');
-      res.status(201).send("Success");
-    }
-  });
-
 });
 
 app.listen(port, () => {
