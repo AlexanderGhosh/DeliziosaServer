@@ -2,6 +2,7 @@ require('dotenv').config();
 const email = require('./libs/email');
 const mongo = require('./libs/mongo');
 const time = require('./libs/time');
+const clocking = require('./libs/clocking');
 const { WorkBook } = require('./libs/excel');
 const express = require('express');
 const cors = require('cors');
@@ -44,51 +45,60 @@ app.get('/c_c/cheese', async (_, res) => {
   res.status(201).json(await client.findAll())
 });
 
-app.post('/clockin', async (req, res) => {
+app.post('/clockIn', async (req, res) => {
   const data = req.body;
-  console.log(data);
+  await clocking.clockIn(data.name, data.startTime, client);
+  /*console.log(data);
   client.activate('WorkingHours', 'ClockIn');
   await client.insert({
     name: data.name,
     startTime: data.startTime,
     endTime: '',
     duration: ''
-  });
+  });*/
   res.status(201).send('Clocked in');
 });
 
-app.post('/clockout', async (req, res) => {
+app.post('/clockOut', async (req, res) => {
   const data = req.body;
-  client.activate('WorkingHours', 'ClockIn');
 
-  await client.findOne({
-    name: data.name,
-    endTime: ''
-  },
-    async function (e, res) {
-      if (res == null) {
-        console.log('returned');
-        return;
+  await clocking.clockOut(data.name, data.endTime, client,
+    async (success) => {
+      if (success) {
+        res.status(201).send('Success');
       }
-      const st = res.startTime;
+      else {
+        res.status(400).send('End Time Out of Range');
+      }
+    }
+  );
+});
 
-      const duration = time.calcDuration(st, data.endTime);
-      console.log(duration);
+app.get('/getNames', async (_, res) => {
 
-      await client.update({
-        name: data.name,
-        endTime: ''
-      },
-        {
-          $set: {
-            name: data.name,
-            startTime: st,
-            endTime: data.endTime,
-            duration: duration
-          }
-        });
-    });
-  res.status(201).send('Updated');
+  /*client.activate('WorkingHours', 'Names');
+  let t = await client.findAll();*/
+  res.status(201).send(await clocking.getPeople(client));
+});
+
+app.post('/addName', async (req, res) => {
+  const data = req.body;
+  /*client.activate('WorkingHours', 'Names');
+  await client.update({}, { $push: { names: { $each: data } } });*/
+  await clocking.addPerson(data.name, client);
+  res.status(201).send('Added names');
+});
+
+app.post('/removeName', async (req, res) => {
+  const data = req.body;
+  await clocking.removePerson(data.name, client);
+  res.status(201).send('Deleted');
+});
+
+app.post('/renameName', async (req, res) => {
+  const data = req.body;
+  await clocking.renamePerson(data.oldName, data.newName, client);
+  res.status(201).send('Renamed');
 });
 
 

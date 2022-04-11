@@ -41,6 +41,10 @@ class MongoConection {
         await this.activeCollection.updateOne(query, values, cb);
     }
 
+    async remove(query, cb) {
+        await this.activeCollection.deleteOne(query, cb);
+    }
+
     close() {
         client.close();
     }
