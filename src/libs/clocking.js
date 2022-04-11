@@ -70,7 +70,7 @@ async function clockOut(name, end, client, callback) {
                 // once start found check if out of range
                 // if out of range then send status code 400
                 const duration = time.durationOutOfRange(start, end);
-                if(duration.invalid) {
+                if (duration.invalid) {
                     await callback(false);
                     return;
                 }
@@ -89,7 +89,7 @@ async function clockOut(name, end, client, callback) {
         else {
             findStart(currentPeriod, async (start) => {
                 const duration = time.durationOutOfRange(start, end);
-                if(duration.invalid) {
+                if (duration.invalid) {
                     await callback(false);
                     return;
                 }
@@ -142,11 +142,34 @@ async function getPeople(client) {
     return (await client.findAll())[0].names;
 }
 
+// working
+async function hasClockedIn(name, today, client, callback) {
+    client.activate('WorkedHours', name);
+    const currentPeriod = period(today);
+    client.findOne({ period: currentPeriod, "times.endTime": '' },
+        async (e, res) => {
+            // no entry found 
+            // the check prev period
+            if (e || !res) {
+                await client.findOne({ period: prevPeriod(today), "times.endTime": '' },
+                    async (e, res) => {
+                        callback(!e && res);
+                    });
+            }
+            // found it
+            else {
+                callback(true);
+            }
+        }
+    );
+}
+
 module.exports = {
     clockIn,
     clockOut,
     addPerson,
     getPeople,
     renamePerson,
-    removePerson
+    removePerson,
+    hasClockedIn
 };

@@ -48,14 +48,6 @@ app.get('/c_c/cheese', async (_, res) => {
 app.post('/clockIn', async (req, res) => {
   const data = req.body;
   await clocking.clockIn(data.name, data.startTime, client);
-  /*console.log(data);
-  client.activate('WorkingHours', 'ClockIn');
-  await client.insert({
-    name: data.name,
-    startTime: data.startTime,
-    endTime: '',
-    duration: ''
-  });*/
   res.status(201).send('Clocked in');
 });
 
@@ -75,30 +67,38 @@ app.post('/clockOut', async (req, res) => {
 });
 
 app.get('/getNames', async (_, res) => {
-
-  /*client.activate('WorkingHours', 'Names');
-  let t = await client.findAll();*/
   res.status(201).send(await clocking.getPeople(client));
 });
 
 app.post('/addName', async (req, res) => {
   const data = req.body;
-  /*client.activate('WorkingHours', 'Names');
-  await client.update({}, { $push: { names: { $each: data } } });*/
   await clocking.addPerson(data.name, client);
-  res.status(201).send('Added names');
+  res.status(201).send('Added name');
 });
 
 app.post('/removeName', async (req, res) => {
   const data = req.body;
   await clocking.removePerson(data.name, client);
-  res.status(201).send('Deleted');
+  res.status(201).send('Deleted name');
 });
 
 app.post('/renameName', async (req, res) => {
   const data = req.body;
   await clocking.renamePerson(data.oldName, data.newName, client);
   res.status(201).send('Renamed');
+});
+
+app.get('/clockedIn', async (req, res) => {
+  const data = req.body;
+  await clocking.hasClockedIn(data.name, data.today, client,
+    async (succes) => {
+      if (succes) {
+        res.status(201).send(true);
+      }
+      else {
+        res.status(404).send(false);
+      }
+    });
 });
 
 
