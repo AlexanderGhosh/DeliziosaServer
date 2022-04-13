@@ -107,6 +107,11 @@ app.post('/clockedIn', async (req, res) => {
     });
 });
 
+app.get('/test', async (_, res) => {
+  await clocking.compileExcell('04/04/2022', client);
+  res.send('fd');
+});
+
 app.listen(port, () => {
   client.database('ClickAndCollect');
   console.log(`API listening on Port:${port}`);

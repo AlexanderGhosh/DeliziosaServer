@@ -75,8 +75,14 @@ function dateToString(date) {
 }
 
 function timeToString(time) {
-    let hours = time.getHours();
-    let mins = time.getMinutes();
+    let hours = time.getHours().toString();
+    let mins = time.getMinutes().toString();
+    if(hours.length < 2) {
+        hours = '0' + hours;
+    }
+    if(mins.length < 2) {
+        mins = '0' + mins;
+    }
     return `${hours}:${mins}`;
 }
 
@@ -101,7 +107,7 @@ function durationOutOfRange(start, end) {
     const endDate = ukDateToDate(end);    
     const endingHour = endDate.getHours();
     return {
-        invalid: hours > 11 || endingHour > 1 && endingHour < 7 || hours < 1,
+        invalid: hours > 11 || endingHour > 1 && endingHour < 7,
         value: `${hours < 10 ? '0' + hours: hours}:${mins < 10 ? '0' + mins: mins}`
     };
 }

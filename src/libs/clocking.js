@@ -1,5 +1,6 @@
 const time = require('./time');
 const { WorkBook } = require('./excel');
+const email = require('./email');
 
 const ORIGINAL_DATE = new Date(2021, 6, 28);
 
@@ -36,7 +37,7 @@ async function clockIn(name, start, client) {
             if (!res) {
                 await client.update({}, { $set: { currentPeriod: currentPeriod } }, cIn);
                 // create and send excell document
-                compileExcell(prevPeriod(start));
+                await compileExcell(prevPeriod(start));
             }
             // is not behind so add clock in as normal
             else {
@@ -206,73 +207,82 @@ async function addComment(name, start, comment, client) {
         { $set: { "times.$.comment": comment } });
 }
 
-/**let wb = new WorkBook();
-  wb.sheet('main test 1');
-  wb.sheet('sheet 2');
-  wb.active('main test 1');
-  wb.cell(1, 1).string('hello alex');
-  wb.cell(2, 2).number(1001);
-  wb.active('sheet 2');
-  wb.cell(3, 3).date(new Date());
-
-  wb.save('test 1');
-
-  _ = email.SendAttachment([{ filename: 'test 1.xlsx', path: './test 1.xlsx' }], 'server test excel', 'ghoshalexander@gmail.com', (e, response) => {
-    if (e) {
-      console.log('error');
-      res.status(500).send("Error");
-    }
-    else {
-      console.log('succ');
-      res.status(201).send("Success");
-    }
-  }); */
-
 function sheetTitle(wb) {
     wb.cell(1, 1).string('Date');
-    wb.cell(1, 3).string('Start Time');
-    wb.cell(1, 4).string('End Time');
-    wb.cell(1, 6).string('Duration');
-    wb.cell(1, 8).string('Comment');
+    wb.cell(3, 1).string('Start Time');
+    wb.cell(4, 1).string('End Time');
+    wb.cell(6, 1).string('Duration');
+    wb.cell(8, 1).string('Comment');
+}
+
+function writeOverview(wb, totals) {
+    wb.active('Overview');
+    wb.cell(1, 1).string('Name');
+    wb.cell(2, 1).string('Total Time');
+    let row = 2;
+    for (const [key, value] of Object.entries(totals)) {
+        const hours = value.hours;
+        const mins = value.mins;
+        wb.cell(1, row).string(key);
+        wb.cell(2, row).string(
+            `${hours < 10 ? '0' + hours : hours}:${mins < 10 ? '0' + mins : mins}`);
+
+        row += 1;
+    }
 }
 
 async function compileExcell(period, client) {
-    let wb = new WorkBook();
-    let totals = {};
     await getPeople(client).then((people) => {
-        console.log(people);
-        people.forEach(async name => {
-            wb.sheet(name);
-            totals[name] = {
-                hours: 0,
-                mins: 0
-            };
+        let wb = new WorkBook();
+        wb.sheet('Overview');
+        let totals = {};
+        people.forEach(name => {
             client.activate('WorkedHours', name);
-            await client.findOne({ period: period }, async (_, res) => {
+            client.findOne({ period: period, "times.endTime": { $ne: '' } }, (_, res) => {
                 if (!res) {
                     return;
                 }
+                totals[name] = {
+                    hours: 0,
+                    mins: 0
+                };
+                wb.sheet(name);
                 let row = 2;
-                for(let i in res.times){
+                for (let i in res.times) {
                     let t = res.times[i];
-                    console.log(t);
                     totals[name].hours += parseInt(t.duration.substring(0, 2));
-                    totals[name].mins += parseInt(t.duration.substring(2));
-                    let start = new Date(t.startTime);
-                    let end = new Date(t.endTime);
+                    totals[name].mins += parseInt(t.duration.substring(3));
+                    let start = time.ukDateToDate(t.startTime);
+                    let end = time.ukDateToDate(t.endTime);
                     sheetTitle(wb);
-                    wb.cell(row, 1).string(time.dateToString(start));
-                    wb.cell(row, 3).string(time.timeToString(start));
-                    wb.cell(row, 4).string(time.timeToString(end));
-                    wb.cell(row, 6).string(t.duration);
-                    wb.cell(row, 8).string(t.comment || '');
+                    let r = time.dateToString(start);
+                    wb.cell(1, row).string(r);
+                    wb.cell(3, row).string(time.timeToString(start));
+                    wb.cell(4, row).string(time.timeToString(end));
+                    wb.cell(6, row).string(t.duration);
+                    wb.cell(8, row).string(t.comment || '');
                     row += 1;
-                    wb.save('test1');
                 }
+                writeOverview(wb, totals);
+                wb.save(`${period} Deli Doc`);
             });
         });
+        let success = email.SendAttachment([{
+            filename: `${period} Deli Doc`,
+            path: `${period} Deli Doc.xlsx`
+        }],
+            `Deli Work times ${period}`, 'philippa@straightforwardyorkshire.co.uk', (e, _) => {
+                if (e) {
+                    console.log('error');
+                    res.status(500).send("Error");
+                }
+                else {
+                    console.log('succ');
+                    res.status(201).send("Success");
+                }
+            });
     });
-    
+
 }
 
 module.exports = {

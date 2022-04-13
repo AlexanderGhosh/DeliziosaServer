@@ -21,8 +21,7 @@ class WorkBook {
         this.activeSheet = name;
     }
     save(name) {
-        this.book.write(`${name}.xlsx`)
-        console.log('saving');
+        this.book.write(`${name}.xlsx`);
     }
 }
 
