@@ -37,7 +37,7 @@ async function clockIn(name, start, client) {
             if (!res) {
                 await client.update({}, { $set: { currentPeriod: currentPeriod } }, cIn);
                 // create and send excell document
-                await compileExcell(prevPeriod(start));
+                await compileExcell(prevPeriod(start), client);
             }
             // is not behind so add clock in as normal
             else {
@@ -232,26 +232,35 @@ function writeOverview(wb, totals) {
 }
 
 async function compileExcell(period, client) {
+    let period_name = period.replace('/', ',').replace('/', ',');
     await getPeople(client).then((people) => {
         let wb = new WorkBook();
         wb.sheet('Overview');
         let totals = {};
         people.forEach(name => {
             client.activate('WorkedHours', name);
-            client.findOne({ period: period, "times.endTime": { $ne: '' } }, (_, res) => {
+            client.findOne({ period: period }, (_, res) => {
                 if (!res) {
                     return;
                 }
-                totals[name] = {
-                    hours: 0,
-                    mins: 0
-                };
-                wb.sheet(name);
                 let row = 2;
                 for (let i in res.times) {
                     let t = res.times[i];
+                    if (t.endTime == '') {
+                        continue;
+                    }
+                    if (row == 2) {
+                        wb.sheet(name);
+                        totals[name] = {
+                            hours: 0,
+                            mins: 0
+                        };
+                    }
                     totals[name].hours += parseInt(t.duration.substring(0, 2));
                     totals[name].mins += parseInt(t.duration.substring(3));
+                    let mins = totals[name].mins;
+                    totals[name].hours += Math.floor(mins / 60);
+                    totals[name].mins = Math.floor(mins % 60);
                     let start = time.ukDateToDate(t.startTime);
                     let end = time.ukDateToDate(t.endTime);
                     sheetTitle(wb);
@@ -264,14 +273,15 @@ async function compileExcell(period, client) {
                     row += 1;
                 }
                 writeOverview(wb, totals);
-                wb.save(`${period} Deli Doc`);
+                wb.save(`${period_name} Deli Doc`);
             });
         });
-        let success = email.SendAttachment([{
-            filename: `${period} Deli Doc`,
-            path: `${period} Deli Doc.xlsx`
+
+        /*let success = email.SendAttachment([{
+            filename: `${period_name} Deli Doc`,
+            path: `${period_name} Deli Doc.xlsx`
         }],
-            `Deli Work times ${period}`, 'philippa@straightforwardyorkshire.co.uk', (e, _) => {
+            `Deli Work times ${period_name}`, 'philippa@straightforwardyorkshire.co.uk', (e, _) => {
                 if (e) {
                     console.log('error');
                     res.status(500).send("Error");
@@ -280,7 +290,7 @@ async function compileExcell(period, client) {
                     console.log('succ');
                     res.status(201).send("Success");
                 }
-            });
+            });*/
     });
 
 }
