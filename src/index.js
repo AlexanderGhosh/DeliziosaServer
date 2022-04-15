@@ -119,7 +119,7 @@ app.get('/peakTimes', async (_, res) => {
       `Deli Work times ${r.currentPeriod}`, 'philippa@straightforwardyorkshire.co.uk', (e, _) => {
         if (e) {
           console.log('error');
-          res.status(500).send("Error");
+          res.status(500).send(e);
         }
         else {
           console.log('succ');
