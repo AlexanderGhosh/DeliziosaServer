@@ -107,9 +107,26 @@ app.post('/clockedIn', async (req, res) => {
     });
 });
 
-app.get('/test', async (_, res) => {
-  await clocking.compileExcell('04/04/2022', client);
-  res.send('fd');
+app.get('/peakTimes', async (_, res) => {
+  client.activate('WorkedHours', 'Info');
+  await client.findOne({ currentPeriod: { $ne: '' } }, async (_, r) => {
+    let period_name = r.currentPeriod.replace('/', ',').replace('/', ',');
+    clocking.compileExcell(period_name, client);
+    let success = email.SendAttachment([{
+      filename: `${period_name} Deli Doc.xlsx`,
+      path: `${period_name} Deli Doc.xlsx`
+    }],//
+      `Deli Work times ${r.currentPeriod}`, 'philippa@straightforwardyorkshire.co.uk', (e, _) => {
+        if (e) {
+          console.log('error');
+          res.status(500).send("Error");
+        }
+        else {
+          console.log('succ');
+          res.status(201).send("Success");
+        }
+      });
+  });
 });
 
 app.listen(port, () => {
