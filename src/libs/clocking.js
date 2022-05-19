@@ -75,7 +75,7 @@ async function clockIn(name, start, client) {
 
 // working such that add the the correct pay period or the prev is not found
 // does duration checking
-async function clockOut(name, end, client, callback) {
+async function clockOut(name, end, comment, client, callback) {
     client.activate('WorkedHours', name);
     const currentPeriod = period(end);
 
@@ -97,7 +97,8 @@ async function clockOut(name, end, client, callback) {
                 await client.update({ "period": prevPeriod_, "times.endTime": '' }, {
                     $set: {
                         "times.$.endTime": end,
-                        "times.$.duration": duration.value
+                        "times.$.duration": duration.value,
+                        "times.$.comment": comment
                     }
                 }, async (e, _) => {
                     await callback(true, start);
@@ -115,7 +116,8 @@ async function clockOut(name, end, client, callback) {
                 await client.update({ "period": currentPeriod, "times.endTime": '' }, {
                     $set: {
                         "times.$.endTime": end,
-                        "times.$.duration": duration.value
+                        "times.$.duration": duration.value,
+                        "times.$.comment": comment
                     }
                 }, async (e, _) => {
                     await callback(true, start);
@@ -233,7 +235,7 @@ function writeOverview(wb, totals) {
 
 async function compileExcell(period, client) {
     let period_name = period.replace('/', ',').replace('/', ',');
-    await getPeople(client).then((people) => {
+    return await getPeople(client).then((people) => {
         let wb = new WorkBook();
         wb.sheet('Overview');
         let totals = {};
@@ -258,7 +260,7 @@ async function compileExcell(period, client) {
                     }
                     totals[name].hours += parseInt(t.duration.substring(0, 2));
                     totals[name].mins += parseInt(t.duration.substring(3));
-                    let mins = totals[name].mins;
+                    const mins = totals[name].mins;
                     totals[name].hours += Math.floor(mins / 60);
                     totals[name].mins = Math.floor(mins % 60);
                     let start = time.ukDateToDate(t.startTime);

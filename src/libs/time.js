@@ -102,7 +102,7 @@ function durationOutOfRange(start, end) {
     let mins = Math.floor(secconds / 60);
     const hours = Math.floor(mins / 60);
     mins -= hours * 60;
-    mins = floor5(mins);
+    // mins = floor5(mins);
 
     const endDate = ukDateToDate(end);    
     const endingHour = endDate.getHours();

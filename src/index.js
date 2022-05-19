@@ -53,7 +53,7 @@ app.post('/clockIn', async (req, res) => {
 app.post('/clockOut', async (req, res) => {
   const data = req.body;
 
-  await clocking.clockOut(data.name, data.endTime, client,
+  await clocking.clockOut(data.name, data.endTime, data.comment, client,
     async (success, start) => {
       if (success) {
         res.status(201).send('Success');
@@ -111,21 +111,25 @@ app.get('/peakTimes', async (_, res) => {
   client.activate('WorkedHours', 'Info');
   await client.findOne({ currentPeriod: { $ne: '' } }, async (_, r) => {
     let period_name = r.currentPeriod.replace('/', ',').replace('/', ',');
-    clocking.compileExcell(period_name, client);
-    let success = email.SendAttachment([{
-      filename: `${period_name} Deli Doc.xlsx`,
-      path: `${period_name} Deli Doc.xlsx`
-    }],//
-      `Deli Work times ${r.currentPeriod}`, 'philippa@straightforwardyorkshire.co.uk', (e, _) => {
-        if (e) {
-          console.log('error');
-          res.status(500).send(e);
-        }
-        else {
-          console.log('succ');
-          res.status(201).send("Success");
-        }
-      });
+    period_name = '02,05,2022'
+    await clocking.compileExcell(/*r.currentPeriod*/'02/05/2022', client).then((a, b) => {
+      res.status(201).send("Good");
+      /*let success = email.SendAttachment([{
+        filename: `${period_name} Deli Doc.xlsx`,
+        path: `${period_name} Deli Doc.xlsx`
+      }],//philippa@straightforwardyorkshire.co.uk
+        `Deli Work times ${r.currentPeriod}`, 'ghoshalexander@gmail.com', (e, _) => {
+          if (e) {
+            console.log('error');
+            res.status(500).send(e);
+          }
+          else {
+            console.log('succ');
+            res.status(201).send("Success");
+          }
+        });*/
+    });
+    /**/
   });
 });
 
