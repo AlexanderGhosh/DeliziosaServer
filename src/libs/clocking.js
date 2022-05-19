@@ -306,5 +306,6 @@ module.exports = {
     removePerson,
     hasClockedIn,
     addComment,
-    compileExcell
+    compileExcell,
+    prevPeriod
 };
