@@ -128,7 +128,7 @@ app.post('/sendDoc', async (req, res) => {
     filename: `${period_name} Deli Doc.xlsx`,
     path: `${period_name} Deli Doc.xlsx`
   }],//ghoshalexander@gmail.com - ptghosh@aol.com
-    `Deli Work times ${period_name}`, 'pghoshsf@straightforward.co.uk', (e, _) => {
+    `Deli Work times ${period_name}`, 'philippa@straightforwardyorkshire.co.uk', (e, _) => {
       if (e) {
         console.log('error');
         res.status(500).send(e);
