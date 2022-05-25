@@ -127,8 +127,8 @@ app.post('/sendDoc', async (req, res) => {
   email.SendAttachment([{
     filename: `${period_name} Deli Doc.xlsx`,
     path: `${period_name} Deli Doc.xlsx`
-  }],//ptghosh@aol.com
-    `Deli Work times ${period_name}`, 'ptghosh@aol.com', (e, _) => {
+  }],//ghoshalexander@gmail.com - ptghosh@aol.com
+    `Deli Work times ${period_name}`, 'pghoshsf@straightforward.co.uk', (e, _) => {
       if (e) {
         console.log('error');
         res.status(500).send(e);
