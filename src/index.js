@@ -44,7 +44,7 @@ app.get('/c_c/cheese', async (_, res) => {
   res.status(201).json(await client.findAll())
 });
 
-app.post('/clockIn', async (req, res) => {
+/*app.post('/clockIn', async (req, res) => {
   const data = req.body;
   await clocking.clockIn(data.name, data.startTime, client);
   res.status(201).send('Clocked in');
@@ -105,7 +105,7 @@ app.post('/clockedIn', async (req, res) => {
         res.status(404).send(false);
       }
     });
-});
+});*/
 
 app.post('/peakTimes', async (req, res) => {
   const data = req.body;
